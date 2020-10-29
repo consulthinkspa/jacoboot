@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     runs-on: [ ubuntu-20.04 ]
-    name: Continuos Integration - build and test
+    name: Continuos Integration - build, test and scan
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK 1.8
@@ -24,8 +24,8 @@ jobs:
       run: mvn install
     - name: Maven - Test
       run: mvn test
-    name: Continuos Integration - generate report coverate
-    steps:
+    #name: Continuos Integration - generate report coverate
+    #steps:
     - name: Setup Sonarqube scanner
       uses: warchant/setup-sonar-scanner@v3
     - name: Run sonar-scanner
