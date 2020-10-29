@@ -34,7 +34,7 @@ jobs:
            -Dsonar.projectVersion=0.0.1-SNAPSHOT
            -Dsonar.sources=.
            -Dsonar.sourceEncoding=UTF-8
-    name: Continuos Integration - publish artifacts
+    #name: Continuos Integration - publish artifacts
     - name: Nexus Repo Publish
       uses: sonatype-nexus-community/nexus-repo-github-action@master
       with:
