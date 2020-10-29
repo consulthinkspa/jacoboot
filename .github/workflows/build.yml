@@ -29,11 +29,11 @@ jobs:
       run: mvn sonar:sonar
            -Dsonar.host.url=${{ secrets.SONARQUBE_HOST }}
            -Dsonar.login=${{ secrets.SONARQUBE_TOKEN }}
-           -Dsonar.projectKey=com.eldisol:jacoboot
-           -Dsonar.projectName=jacoboot
-           -Dsonar.projectVersion=0.0.1-SNAPSHOT
-           -Dsonar.sources=.
-           -Dsonar.sourceEncoding=UTF-8
+           #-Dsonar.projectKey=com.eldisol:jacoboot
+           #-Dsonar.projectName=jacoboot
+           #-Dsonar.projectVersion=0.0.1-SNAPSHOT
+           #-Dsonar.sources=.
+           #-Dsonar.sourceEncoding=UTF-8
     #name: Continuos Integration - publish artifacts
     - name: Nexus Repo Publish
       uses: sonatype-nexus-community/nexus-repo-github-action@master
