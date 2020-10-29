@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.eldisol</groupId>
     <artifactId>jacoboot</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
     <name>jacoboot</name>
     <description>Simple project for Spring Boot 2.2.4.RELEASE, Jacoco and Junit 5</description>
 
