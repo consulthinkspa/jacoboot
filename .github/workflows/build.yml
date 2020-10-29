@@ -25,7 +25,7 @@ jobs:
     - name: Maven - Test
       run: mvn test
     #name: Continuos Integration - generate report coverate
-    - name: Run sonar-scanner
+    - name: Maven - generate report coverage
       run: mvn sonar:sonar
            -Dsonar.host.url=${{ secrets.SONARQUBE_HOST }}
            -Dsonar.login=${{ secrets.SONARQUBE_TOKEN }}
