@@ -7,9 +7,9 @@ on:
       - master
 
 jobs:
-  maven_tasks:
+  build:
     runs-on: [ ubuntu-20.04 ]
-    name: Maven Tasks
+    name: Continuos Integration - build and test
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK 1.8
@@ -18,24 +18,17 @@ jobs:
         java-version: 1.8
         #server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         #settings-path: ${{ github.workspace }} # location for the settings.xml file
-    - name: Maven - clean workspace
-      run: mvn clean
+    - name: Maven - Clean and verify project
+      run: mvn clean verify
     - name: Maven - Build
       run: mvn install
     - name: Maven - Test
       run: mvn test
-
-  sonarqube_scanner:
-    runs-on: [ ubuntu-20.04 ]
-    name: Sonarqube scan and report generate
+    name: Continuos Integration - generate report coverate
     steps:
     - name: Setup Sonarqube scanner
       uses: warchant/setup-sonar-scanner@v3
     - name: Run sonar-scanner
-      #env:
-      #  to get access to secrets.SONAR_TOKEN, provide GITHUB_TOKEN
-      #  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #           -Dsonar.organization=com.mycompany.app
       run: sonar-scanner
            -Dsonar.host.url=${{ secrets.SONARQUBE_HOST }}
            -Dsonar.login=${{ secrets.SONARQUBE_TOKEN }}
