@@ -20,8 +20,10 @@ jobs:
         #settings-path: ${{ github.workspace }} # location for the settings.xml file
     - name: Maven - Clean
       run: mvn clean
-    - name: Maven - testing and verify
+    - name: Maven - verify
       run: mvn verify
+    - name: Maven - test
+      run: mvn test
     #name: Continuos Integration - generate report coverate
     - name: Maven - generate report coverage
       run: mvn sonar:sonar
