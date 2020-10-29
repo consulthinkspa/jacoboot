@@ -18,12 +18,10 @@ jobs:
         java-version: 1.8
         #server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         #settings-path: ${{ github.workspace }} # location for the settings.xml file
-    - name: Maven - Clean and verify project
-      run: mvn clean verify
-    - name: Maven - Build
-      run: mvn install
-    - name: Maven - Test
-      run: mvn test
+    - name: Maven - Clean
+      run: mvn clean
+    - name: Maven - testing and verify
+      run: mvn verify
     #name: Continuos Integration - generate report coverate
     - name: Maven - generate report coverage
       run: mvn sonar:sonar
@@ -35,6 +33,8 @@ jobs:
            #-Dsonar.sources=.
            #-Dsonar.sourceEncoding=UTF-8
     #name: Continuos Integration - publish artifacts
+    - name: Maven - Build
+      run: mvn install
     - name: Nexus Repo Publish
       uses: sonatype-nexus-community/nexus-repo-github-action@master
       with:
