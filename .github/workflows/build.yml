@@ -7,9 +7,10 @@ on:
       - master
 
 jobs:
+  runs-on: [ ubuntu-20.04 ]
+
   maven_tasks:
     name: Maven Taskss
-    runs-on: [ ubuntu-20.04 ]
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK 1.8
@@ -26,6 +27,8 @@ jobs:
       run: mvn test
 
   sonarqube_scanner:
+    name: Sonarqube scan and report generate
+    steps:
     - name: Setup Sonarqube scanner
       uses: warchant/setup-sonar-scanner@v3
     - name: Run sonar-scanner
