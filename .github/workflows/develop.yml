@@ -5,7 +5,6 @@ on:
   pull_request:
     branches:
       - develop
-      - main
 
 jobs:
   qa_and_vs_check:
@@ -19,24 +18,26 @@ jobs:
         java-version: 1.8
         #server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         #settings-path: ${{ github.workspace }} # location for the settings.xml file
+
     - name: Maven - run tests and vulnerability check
       run: mvn verify org.owasp:dependency-check-maven:6.0.2:check
             -Dformat=XML
             -DprettyPrint=true
             -DcveValidForHours=12
-    #name: Continuos Integration - generate report coverate
+
     - name: Maven - generate report coverage
       run: mvn org.codehaus.mojo:sonar-maven-plugin:3.7.0.1746:sonar
             -Dsonar.host.url=${{ secrets.SONARQUBE_HOST }}
             -Dsonar.login=${{ secrets.SONARQUBE_TOKEN }}
             -Dsonar.dependencyCheck.xmlReportPath=./target/dependency-check-report.xml
             -Dsonar.dependencyCheck.severity.blocker=7.0
-            -Dsonar.dependencyCheck.securityHotspot=true
+            #-Dsonar.dependencyCheck.securityHotspot=true
             #-Dsonar.projectKey=com.eldisol:jacoboot
             #-Dsonar.projectName=jacoboot
             #-Dsonar.projectVersion=0.0.1-SNAPSHOT
             #-Dsonar.sources=.
             #-Dsonar.sourceEncoding=UTF-8
+
     - name: Sonarqube Quality Gate
       shell: bash
       run: ./.github/workflows/sonar_quality_gate.sh
@@ -44,8 +45,7 @@ jobs:
             ${{ secrets.SONARQUBE_TOKEN }}
 
   build_and_deploy:
-    runs-on: [ ubuntu-20.04 ]
-    name: Build and deploy
+    name: Compile and deploy package
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK 1.8
@@ -54,9 +54,12 @@ jobs:
         java-version: 1.8
         #server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         #settings-path: ${{ github.workspace }} # location for the settings.xml file
+
     - name: Maven - building
       run: mvn package
+
     - name: Nexus Repo Publish
+      if: ${{ needs.qa_and_vs_check.result == 'success' }}
       uses: sonatype-nexus-community/nexus-repo-github-action@master
       with:
         serverUrl: ${{ secrets.NEXUS3_HOST }}
