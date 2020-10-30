@@ -60,6 +60,7 @@ jobs:
       run: mvn package
 
     - name: Nexus Repo Publish
+      needs: qa_and_vs_check
       if: ${{ needs.qa_and_vs_check.result == 'success' }}
       uses: sonatype-nexus-community/nexus-repo-github-action@master
       with:
