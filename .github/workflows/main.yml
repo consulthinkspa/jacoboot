@@ -40,7 +40,7 @@ jobs:
 
     - name: Sonarqube Quality Gate
       shell: bash
-      run: ./.github/workflows/sonar_quality_gate.sh
+      run: ./.github/scripts/sonar_quality_gate.sh
             ${{ secrets.SONARQUBE_HOST }}
             ${{ secrets.SONARQUBE_TOKEN }}
 
