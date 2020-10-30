@@ -45,6 +45,7 @@ jobs:
             ${{ secrets.SONARQUBE_TOKEN }}
 
   build_and_deploy:
+    needs: qa_and_vs_check
     runs-on: [ ubuntu-20.04 ]
     name: Compile and deploy package
     steps:
@@ -60,7 +61,6 @@ jobs:
       run: mvn package
 
     - name: Nexus Repo Publish
-      needs: qa_and_vs_check
       if: ${{ needs.qa_and_vs_check.result == 'success' }}
       uses: sonatype-nexus-community/nexus-repo-github-action@master
       with:
