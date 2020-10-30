@@ -44,9 +44,10 @@ jobs:
             ${{ secrets.SONARQUBE_HOST }}
             ${{ secrets.SONARQUBE_TOKEN }}
 
-  build:
+  build_and_deploy:
+    needs: qa_and_vs_check
     runs-on: [ ubuntu-20.04 ]
-    name: Compile package
+    name: Compile package and Deploy artifacts
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK 1.8
@@ -58,13 +59,8 @@ jobs:
     - name: Maven - building
       run: mvn package
 
-  deploy:
-    needs: [ qa_and_vs_check, build ]
-    runs-on: [ ubuntu-20.04 ]
-    name: Compile package
-    steps:
     - name: Nexus Repo Publish
-      if: ${{ needs.qa_and_vs_check.result == 'success' && needs.build.result == 'success'}}
+      if: ${{ needs.qa_and_vs_check.result == 'success' }}
       uses: sonatype-nexus-community/nexus-repo-github-action@master
       with:
         serverUrl: ${{ secrets.NEXUS3_HOST }}
