@@ -31,6 +31,7 @@ jobs:
             -Dsonar.login=${{ secrets.SONARQUBE_TOKEN }}
             -Dsonar.dependencyCheck.xmlReportPath=./target/dependency-check-report.xml
             -Dsonar.dependencyCheck.severity.blocker=7.0
+            -Dsonar.dependencyCheck.securityHotspot=true
             #-Dsonar.projectKey=com.eldisol:jacoboot
             #-Dsonar.projectName=jacoboot
             #-Dsonar.projectVersion=0.0.1-SNAPSHOT
