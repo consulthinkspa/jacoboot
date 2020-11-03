@@ -20,8 +20,8 @@ jobs:
         #settings-path: ${{ github.workspace }} # location for the settings.xml file
 
     - name: Maven - run tests and vulnerability check
-      run: mvn verify org.owasp:dependency-check-maven:6.0.2:check
-            -Dformat=XML
+      run: mvn test org.owasp:dependency-check-maven:6.0.2:check
+            -Dformats=XML,HTML
             -DprettyPrint=true
             -DcveValidForHours=12
 
@@ -30,6 +30,7 @@ jobs:
             -Dsonar.host.url=${{ secrets.SONARQUBE_HOST }}
             -Dsonar.login=${{ secrets.SONARQUBE_TOKEN }}
             -Dsonar.dependencyCheck.xmlReportPath=./target/dependency-check-report.xml
+            -Dsonar.dependencyCheck.htmlReportPath=./target/dependency-check-report.html
             -Dsonar.dependencyCheck.severity.blocker=7.0
             #-Dsonar.dependencyCheck.securityHotspot=true
             #-Dsonar.projectKey=com.eldisol:jacoboot
