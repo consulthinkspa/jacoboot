@@ -38,7 +38,7 @@ jobs:
     #        #-Djacoco.destFile=./coverage/jacoco.exec clean
 
     - name: Maven - vulnerability check
-      run: mvn org.owasp:dependency-check-maven:6.0.2y:check
+      run: mvn org.owasp:dependency-check-maven:6.0.3:check
             -Dformats=XML,HTML
             -DprettyPrint=true
             -DcveValidForHours=12
