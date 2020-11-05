@@ -43,9 +43,9 @@ jobs:
         cache-name: cache-dependency-check-nvd
       with:
         path: ~/.nvd
-        key: nvd-${{ env.cache-name }}-${{ env.GITHUB_SHA }}
+        key: nvd-${{ env.cache-name }}
         restore-keys: |
-          nvd-${{ env.cache-name }}-
+          nvd-${{ env.cache-name }}
           nvd-
 
     - name: Maven - vulnerability check
@@ -102,7 +102,7 @@ jobs:
 
     - name: Maven - deploy artifacts
       run: curl -v -u ${{ secrets.NEXUS3_USER }}:${{ secrets.NEXUS3_PASSWORD }} --upload-file ./target/$POM_ARTIFACTID-$POM_VERSION.jar
-            ${{ secrets.NEXUS3_HOST }}/maven-releases/$POM_GROUPID/$POM_ARTIFACTID/$POM_VERSION/$POM_ARTIFACTID-$POM_VERSION.jar
+            ${{ secrets.NEXUS3_HOST }}/repository/maven-releases/$POM_GROUPID/$POM_ARTIFACTID/$POM_VERSION/$POM_ARTIFACTID-$POM_VERSION.jar
 
     #- name: Nexus Repo Publish
     #  if: ${{ needs.qa_and_vs_check.result == 'success' }}
