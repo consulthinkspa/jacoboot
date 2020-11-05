@@ -2,9 +2,7 @@
 name: POC CI - develop steps
 
 on:
-  # debuging
-  push:
-  #pull_request:
+  pull_request:
     branches:
       - develop
 
