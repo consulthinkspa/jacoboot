@@ -69,7 +69,7 @@ jobs:
             #-Dsonar.sourceEncoding=UTF-8
             #-Dsonar.dependencyCheck.securityHotspot=true
 
-      # To Do: mostrare url sonarqube in caso di fallimento
+      # To Do: show sonarqube uri when fails
     - name: Sonarqube Quality Gate
       shell: bash
       run: ./.github/scripts/sonar_quality_gate.sh
@@ -99,18 +99,20 @@ jobs:
 
       # To Do: generate snapshot
     - name: Maven - building
-      run: mvn package -Dmaven.test.skip=true
+      run: mvn package
+            -Dmaven.test.skip=true
+            -Dproject.version=${POM_VERSION}-SNAPSHOT
 
       # To Do: setup snapshot repo
     - name: Maven - deploy artifacts
       run: mvn deploy:deploy-file
             -DgroupId=$POM_GROUPID
             -DartifactId=$POM_ARTIFACTID
-            -Dversion=$POM_VERSION
+            -Dversion=${POM_VERSION}-SNAPSHOT
             -DgeneratePom=true
             -Dpackaging=jar
-            -Durl=${{ secrets.NEXUS3_HOST }}/repository/maven-releases
-            -Dfile=./target/$POM_NAME-$POM_VERSION.jar
+            -Durl=${{ secrets.NEXUS3_HOST }}/repository/maven-snapshots
+            -Dfile=./target/$POM_NAME-${POM_VERSION}-SNAPSHOT.jar
             -Dusername=${{ secrets.NEXUS3_USER }}
             -Dpassword=${{ secrets.NEXUS3_PASSWORD }}
 
