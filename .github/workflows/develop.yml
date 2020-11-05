@@ -37,11 +37,26 @@ jobs:
     #        #org.jacoco:jacoco-maven-plugin:0.8.5:check
     #        #-Djacoco.destFile=./coverage/jacoco.exec clean
 
+    - name: Cache dependency-check NVD index
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-dependency-check-nvd
+      with:
+        # npm cache files are stored in `~/.npm` on Linux/macOS
+        path: ~/.nvd
+        key: ${{ runner.os }}-build-${{ env.cache-name }}
+        #-${{ hashFiles('pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-build-${{ env.cache-name }}
+          ${{ runner.os }}-build-
+          ${{ runner.os }}-
+
     - name: Maven - vulnerability check
       run: mvn org.owasp:dependency-check-maven:6.0.3:check
             -Dformats=XML,HTML
             -DprettyPrint=true
             -DcveValidForHours=12
+            -DdataDirectory=~/.nvd
 
     - name: Maven - generate report coverage
       run: mvn org.codehaus.mojo:sonar-maven-plugin:3.7.0.1746:sonar
