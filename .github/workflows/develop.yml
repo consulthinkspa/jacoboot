@@ -104,7 +104,7 @@ jobs:
       # To Do: setup snapshot repo
     - name: Maven - deploy artifacts
       run: curl -v -f -u ${{ secrets.NEXUS3_USER }}:${{ secrets.NEXUS3_PASSWORD }}
-            --upload-file ./target/$POM_name-$POM_VERSION.jar
+            --upload-file ./target/$POM_NAME-$POM_VERSION.jar
             ${{ secrets.NEXUS3_HOST }}/repository/maven-releases/$POM_GROUPID/$POM_ARTIFACTID/$POM_VERSION/
 
     #- name: Nexus Repo Publish
