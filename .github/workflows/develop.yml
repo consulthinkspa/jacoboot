@@ -27,7 +27,7 @@ jobs:
         echo "POM_NAME=$(mvn help:evaluate -Dexpression=project.name -q -DforceStdout)" >> $GITHUB_ENV
         echo "POM_DESCRIPTION=$(mvn help:evaluate -Dexpression=project.description -q -DforceStdout)" >> $GITHUB_ENV
 
-    - name: Maven - run unit tests and vulnerability check
+    - name: Maven - run unit tests
       run: mvn test
 
     # To Do: override jacoco configuration
@@ -42,14 +42,11 @@ jobs:
       env:
         cache-name: cache-dependency-check-nvd
       with:
-        # npm cache files are stored in `~/.npm` on Linux/macOS
         path: ~/.nvd
-        key: ${{ runner.os }}-build-${{ env.cache-name }}
-        #-${{ hashFiles('pom.xml') }}
+        key: nvd-${{ env.cache-name }}-${{ env.GITHUB_SHA }}
         restore-keys: |
-          ${{ runner.os }}-build-${{ env.cache-name }}
-          ${{ runner.os }}-build-
-          ${{ runner.os }}-
+          nvd-${{ env.cache-name }}-
+          nvd-
 
     - name: Maven - vulnerability check
       run: mvn org.owasp:dependency-check-maven:6.0.3:check
@@ -58,7 +55,7 @@ jobs:
             -DcveValidForHours=12
             -DdataDirectory=~/.nvd
 
-    - name: Maven - generate report coverage
+    - name: Maven - generate sonarqube report
       run: mvn org.codehaus.mojo:sonar-maven-plugin:3.7.0.1746:sonar
             -Dsonar.host.url=${{ secrets.SONARQUBE_HOST }}
             -Dsonar.login=${{ secrets.SONARQUBE_TOKEN }}
@@ -72,6 +69,7 @@ jobs:
             #-Dsonar.sourceEncoding=UTF-8
             #-Dsonar.dependencyCheck.securityHotspot=true
 
+    # To Do: mostrare url sonarqube in caso di fallimento
     - name: Sonarqube Quality Gate
       shell: bash
       run: ./.github/scripts/sonar_quality_gate.sh
