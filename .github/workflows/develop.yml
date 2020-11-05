@@ -18,10 +18,17 @@ jobs:
         java-version: 1.8
         #server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         #settings-path: ${{ github.workspace }} # location for the settings.xml file
+
     - name: Data mining - get pom informations
-      env:
-        POM_VERSION: ${{ mvn help:evaluate -Dexpression=project.version -q -DforceStdout }}
-      run: echo $ POM_VERSION
+      run: |
+        echo "POM_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+        echo "POM_GROUPID=$(mvn help:evaluate -Dexpression=project.groupId -q -DforceStdout)" >> $GITHUB_ENV
+        echo "POM_ARTIFACTID=$(mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout)" >> $GITHUB_ENV
+        echo "POM_NAME=$(mvn help:evaluate -Dexpression=project.name -q -DforceStdout)" >> $GITHUB_ENV
+        echo "POM_DESCRIPTION=$(mvn help:evaluate -Dexpression=project.description -q -DforceStdout)" >> $GITHUB_ENV
+
+    - name: Debug envs
+      run: echo $POM_VERSION
 
     - name: Maven - run unit tests and vulnerability check
       run: mvn test
