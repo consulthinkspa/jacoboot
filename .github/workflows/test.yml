@@ -1,5 +1,5 @@
 
-name: POC maven - sonarqube - nexus
+name: POC - deploy and promotion test
 
 on:
   pull_request:
@@ -18,6 +18,7 @@ jobs:
         java-version: 1.8
         #server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         #settings-path: ${{ github.workspace }} # location for the settings.xml file
+
     - name: Data mining - get pom informations
       run: |
         echo "POM_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
@@ -28,16 +29,16 @@ jobs:
 
       # To Do: with Ansible
     - name: Get application from nexus
-      run: curl -v -O ${{ secrets.NEXUS3_HOST }}/repository/maven-snapshots/$POM_GROUPID/$POM_ARTIFACTID/$POM_VERSION/$POM_NAME-$POM_VERSION.jar
+      run: curl -v -O ${{ secrets.NEXUS3_HOST }}/repository/maven-snapshots/$POM_GROUPID/$POM_ARTIFACTID/$POM_VERSION/$POM_NAME-$POM_VERSION-SNAPSHOT.jar
 
       # To Do: with Ansible
     - name: Run application - demo
-      run: echo "java -jar ./$POM_NAME-${POM_VERSION}-RC-SNAPSHOT.jar"
+      run: echo "java -jar ./$POM_NAME-${POM_VERSION}-SNAPSHOT.jar"
 
   rc_promotion:
     needs: qa_deploy
     runs-on: [ ubuntu-20.04 ]
-    name: Promote snapshot package to Release Candidate (RC)
+    name: Promote snapshot package as Release Candidate (RC)
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK 1.8
@@ -59,16 +60,16 @@ jobs:
     - name: Maven - building
       run: mvn clean package
             -Dmaven.test.skip=true
-            -Dproject.version=${POM_VERSION}-RC-SNAPSHOST
 
     - name: Maven - deploy artifacts
+      if: ${{ needs.qa_deploy.result == 'success' }}
       run: mvn deploy:deploy-file
             -DgroupId=$POM_GROUPID
             -DartifactId=$POM_ARTIFACTID
-            -Dversion=${POM_VERSION}-RC-SNAPSHOT
+            -Dversion=$POM_VERSION
             -DgeneratePom=true
             -Dpackaging=jar
-            -Durl=${{ secrets.NEXUS3_HOST }}/repository/maven-snapshots
-            -Dfile=./target/$POM_NAME-${POM_VERSION}-RC-SNAPSHOT.jar
+            -Durl=${{ secrets.NEXUS3_HOST }}/repository/maven-releases
+            -Dfile=./target/$POM_NAME-$POM_VERSION.jar
             -Dusername=${{ secrets.NEXUS3_USER }}
             -Dpassword=${{ secrets.NEXUS3_PASSWORD }}
