@@ -21,9 +21,6 @@ jobs:
     - name: Data mining - get pom informations
       env:
         POM_VERSION: ${{ mvn help:evaluate -Dexpression=project.version -q -DforceStdout }}
-
-    - name: Debug echo env
-      shell: bash
       run: echo $ POM_VERSION
 
     - name: Maven - run unit tests and vulnerability check
