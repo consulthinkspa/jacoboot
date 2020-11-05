@@ -1,5 +1,5 @@
 
-name: POC maven - sonarqube - nexus
+name: POC CI - develop steps
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ on:
 jobs:
   qa_and_vs_check:
     runs-on: [ ubuntu-20.04 ]
-    name: Test, vulnerability checks and report coverage
+    name: Tests, vulnerability checks and report coverage
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK 1.8
@@ -19,26 +19,57 @@ jobs:
         #server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         #settings-path: ${{ github.workspace }} # location for the settings.xml file
 
-    - name: Maven - run tests and vulnerability check
-      run: mvn test org.owasp:dependency-check-maven:6.0.2:check
+    - name: Data mining - get pom informations
+      run: |
+        echo "POM_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+        echo "POM_GROUPID=$(mvn help:evaluate -Dexpression=project.groupId -q -DforceStdout)" >> $GITHUB_ENV
+        echo "POM_ARTIFACTID=$(mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout)" >> $GITHUB_ENV
+        echo "POM_NAME=$(mvn help:evaluate -Dexpression=project.name -q -DforceStdout)" >> $GITHUB_ENV
+        echo "POM_DESCRIPTION=$(mvn help:evaluate -Dexpression=project.description -q -DforceStdout)" >> $GITHUB_ENV
+
+    - name: Maven - run unit tests
+      run: mvn test
+
+    # To Do: override jacoco configuration
+    #- name: Maven - generate jacoco coverage
+    #  run: mvn org.jacoco:jacoco-maven-plugin:0.8.5:prepare-agent
+    #        org.jacoco:jacoco-maven-plugin:0.8.5:report
+    #        #org.jacoco:jacoco-maven-plugin:0.8.5:check
+    #        #-Djacoco.destFile=./coverage/jacoco.exec clean
+
+    - name: Cache dependency-check NVD index
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-dependency-check-nvd
+      with:
+        path: ~/.nvd
+        key: nvd-${{ env.cache-name }}
+        restore-keys: |
+          nvd-${{ env.cache-name }}
+          nvd-
+
+    - name: Maven - vulnerability check
+      run: mvn org.owasp:dependency-check-maven:6.0.3:check
             -Dformats=XML,HTML
             -DprettyPrint=true
             -DcveValidForHours=12
+            -DdataDirectory=~/.nvd
 
-    - name: Maven - generate report coverage
+    - name: Maven - generate sonarqube report
       run: mvn org.codehaus.mojo:sonar-maven-plugin:3.7.0.1746:sonar
             -Dsonar.host.url=${{ secrets.SONARQUBE_HOST }}
             -Dsonar.login=${{ secrets.SONARQUBE_TOKEN }}
             -Dsonar.dependencyCheck.xmlReportPath=./target/dependency-check-report.xml
             -Dsonar.dependencyCheck.htmlReportPath=./target/dependency-check-report.html
-            -Dsonar.dependencyCheck.severity.blocker=7.0
-            #-Dsonar.dependencyCheck.securityHotspot=true
-            #-Dsonar.projectKey=com.eldisol:jacoboot
-            #-Dsonar.projectName=jacoboot
-            #-Dsonar.projectVersion=0.0.1-SNAPSHOT
+            -Dsonar.dependencyCheck.severity.blocker=8.0
+            -Dsonar.projectKey=$POM_GROUPID:$POM_ARTIFACTID
+            -Dsonar.projectName=$POM_NAME
+            -Dsonar.projectVersion=$POM_VERSION
             #-Dsonar.sources=.
             #-Dsonar.sourceEncoding=UTF-8
+            #-Dsonar.dependencyCheck.securityHotspot=true
 
+      # To Do: show sonarqube uri when fails
     - name: Sonarqube Quality Gate
       shell: bash
       run: ./.github/scripts/sonar_quality_gate.sh
@@ -57,18 +88,35 @@ jobs:
         java-version: 1.8
         #server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         #settings-path: ${{ github.workspace }} # location for the settings.xml file
+
+    - name: Data mining - get pom informations
+      run: |
+        echo "POM_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+        echo "POM_GROUPID=$(mvn help:evaluate -Dexpression=project.groupId -q -DforceStdout)" >> $GITHUB_ENV
+        echo "POM_ARTIFACTID=$(mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout)" >> $GITHUB_ENV
+        echo "POM_NAME=$(mvn help:evaluate -Dexpression=project.name -q -DforceStdout)" >> $GITHUB_ENV
+        echo "POM_DESCRIPTION=$(mvn help:evaluate -Dexpression=project.description -q -DforceStdout)" >> $GITHUB_ENV
+
+      # To Do: generate snapshot
     - name: Maven - building
       run: mvn package
+            -Dmaven.test.skip=true
 
-    - name: Nexus Repo Publish
+      # To Do: setup snapshot repo
+    - name: Maven - deploy artifacts
       if: ${{ needs.qa_and_vs_check.result == 'success' }}
-      uses: sonatype-nexus-community/nexus-repo-github-action@master
-      with:
-        serverUrl: ${{ secrets.NEXUS3_HOST }}
-        username: ${{ secrets.NEXUS3_USER }}
-        password: ${{ secrets.NEXUS3_PASSWORD }}
-        format: maven2
-        repository: maven-releases
-        coordinates: groupId=com.eldisol artifactId=jacoboot version=0.0.1
-        assets: extension=jar
-        filename: ./target/jacoboot-0.0.1.jar
+      run: mvn deploy:deploy-file
+            -DgroupId=$POM_GROUPID
+            -DartifactId=$POM_ARTIFACTID
+            -Dversion=${POM_VERSION}-SNAPSHOT
+            -DgeneratePom=true
+            -Dpackaging=jar
+            -Durl=${{ secrets.NEXUS3_HOST }}/repository/maven-snapshots
+            -Dfile=./target/$POM_NAME-$POM_VERSION.jar
+            -Dusername=${{ secrets.NEXUS3_USER }}
+            -Dpassword=${{ secrets.NEXUS3_PASSWORD }}
+
+    #- name: Deploy artifacts
+    #  run: curl -v -f -u ${{ secrets.NEXUS3_USER }}:${{ secrets.NEXUS3_PASSWORD }}
+    #        --upload-file ./target/$POM_NAME-$POM_VERSION.jar
+    #        ${{ secrets.NEXUS3_HOST }}/repository/maven-releases/$POM_GROUPID/$POM_ARTIFACTID/$POM_VERSION/
