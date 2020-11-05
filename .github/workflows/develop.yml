@@ -18,16 +18,13 @@ jobs:
         java-version: 1.8
         #server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         #settings-path: ${{ github.workspace }} # location for the settings.xml file
+    - name: Data mining - get pom informations
+      env:
+        POM_VERSION: ${{ mvn help:evaluate -Dexpression=project.version -q -DforceStdout }}
 
-    - name: Maven - data mining from pom.xml
+    - name: Debug echo env
       shell: bash
-      run: ./.github/scripts/maven_information.sh
-
-    - name: debug envs
-      shell: bash
-      run: |
-        echo $POM_VERSION
-        echo $POM_NAME
+      run: echo $ POM_VERSION
 
     - name: Maven - run unit tests and vulnerability check
       run: mvn test
@@ -88,7 +85,7 @@ jobs:
       run: mvn package -Dmaven.test.skip=true
 
     - name: Maven - deploy artifacts
-      run: mvn deploy:deploy-file
+      run: mvn -X deploy:deploy-file
             -DgroupId=com.eldisol
             -DartifactId=jacoboot
             -Dversion=0.0.1
@@ -96,7 +93,7 @@ jobs:
             -Dpackaging=jar
             -Dfile=./target/jacoboot-0.0.1.jar
             -DrepositoryId=maven-releases
-            -Durl=${{ secrets.NEXUS3_HOST }}
+            -Durl=${{ secrets.NEXUS3_HOST }}/maven-releases
             -Dusername=${{ secrets.NEXUS3_USER }}
             -Dpassword=${{ secrets.NEXUS3_PASSWORD }}
 
