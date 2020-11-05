@@ -2,7 +2,9 @@
 name: POC CI - develop steps
 
 on:
-  pull_request:
+  # debuging
+  push:
+  #pull_request:
     branches:
       - develop
 
@@ -22,6 +24,12 @@ jobs:
     - name: Maven - data mining from pom.xml
       shell: bash
       run: ./.github/scripts/maven_information.sh
+
+    - name: debug envs
+      shell: bash
+      run: |
+        echo $POM_VERSION
+        echo $POM_NAME
 
     - name: Maven - run unit tests and vulnerability check
       run: mvn test
@@ -72,24 +80,37 @@ jobs:
         #server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         #settings-path: ${{ github.workspace }} # location for the settings.xml file
 
-    - name: Maven - data mining from pom.xml
-      shell: bash
-      run: |
-        echo $POM_VERSION
-        echo $POM_NAME
+    #- name: debug envs
+    #  shell: bash
+    #  run: |
+    #    echo $POM_VERSION
+    #    echo $POM_NAME
 
     - name: Maven - building
       run: mvn package -Dmaven.test.skip=true
 
-    - name: Nexus Repo Publish
-      if: ${{ needs.qa_and_vs_check.result == 'success' }}
-      uses: sonatype-nexus-community/nexus-repo-github-action@master
-      with:
-        serverUrl: ${{ secrets.NEXUS3_HOST }}
-        username: ${{ secrets.NEXUS3_USER }}
-        password: ${{ secrets.NEXUS3_PASSWORD }}
-        format: maven2
-        repository: maven-releases
-        coordinates: groupId=com.eldisol artifactId=jacoboot version=0.0.1
-        assets: extension=jar
-        filename: ./target/jacoboot-0.0.1.jar
+    - name: Maven - deploy artifacts
+      run: mvn deploy:deploy-file
+            -DgroupId=com.eldisol
+            -DartifactId=jacoboot
+            -Dversion=0.0.1
+            -DgeneratePom=true
+            -Dpackaging=jar
+            -Dfile=./target/jacoboot-0.0.1.jar
+            -DrepositoryId=maven-releases
+            -Durl=${{ secrets.NEXUS3_HOST }}
+            -Dusername=${{ secrets.NEXUS3_USER }}
+            -Dpassword=${{ secrets.NEXUS3_PASSWORD }}
+
+    #- name: Nexus Repo Publish
+    #  if: ${{ needs.qa_and_vs_check.result == 'success' }}
+    #  uses: sonatype-nexus-community/nexus-repo-github-action@master
+    #  with:
+    #    serverUrl: ${{ secrets.NEXUS3_HOST }}
+    #    username: ${{ secrets.NEXUS3_USER }}
+    #    password: ${{ secrets.NEXUS3_PASSWORD }}
+    #    format: maven2
+    #    repository: maven-releases
+    #    coordinates: groupId=com.eldisol artifactId=jacoboot version=0.0.1
+    #    assets: extension=jar
+    #    filename: ./target/jacoboot-0.0.1.jar
