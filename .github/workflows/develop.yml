@@ -27,9 +27,6 @@ jobs:
         echo "POM_NAME=$(mvn help:evaluate -Dexpression=project.name -q -DforceStdout)" >> $GITHUB_ENV
         echo "POM_DESCRIPTION=$(mvn help:evaluate -Dexpression=project.description -q -DforceStdout)" >> $GITHUB_ENV
 
-    - name: Debug envs
-      run: echo $POM_VERSION
-
     - name: Maven - run unit tests and vulnerability check
       run: mvn test
 
@@ -53,12 +50,12 @@ jobs:
             -Dsonar.dependencyCheck.xmlReportPath=./target/dependency-check-report.xml
             -Dsonar.dependencyCheck.htmlReportPath=./target/dependency-check-report.html
             -Dsonar.dependencyCheck.severity.blocker=8.0
-            #-Dsonar.dependencyCheck.securityHotspot=true
-            #-Dsonar.projectKey=com.eldisol:jacoboot
-            #-Dsonar.projectName=jacoboot
-            #-Dsonar.projectVersion=0.0.1-SNAPSHOT
+            -Dsonar.projectKey=$POM_GROUPID:$POM_ARTIFACTID
+            -Dsonar.projectName=$POM_NAME
+            -Dsonar.projectVersion=$POM_VERSION
             #-Dsonar.sources=.
             #-Dsonar.sourceEncoding=UTF-8
+            #-Dsonar.dependencyCheck.securityHotspot=true
 
     - name: Sonarqube Quality Gate
       shell: bash
@@ -79,27 +76,30 @@ jobs:
         #server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         #settings-path: ${{ github.workspace }} # location for the settings.xml file
 
-    #- name: debug envs
-    #  shell: bash
-    #  run: |
-    #    echo $POM_VERSION
-    #    echo $POM_NAME
+    - name: Data mining - get pom informations
+      run: |
+        echo "POM_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+        echo "POM_GROUPID=$(mvn help:evaluate -Dexpression=project.groupId -q -DforceStdout)" >> $GITHUB_ENV
+        echo "POM_ARTIFACTID=$(mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout)" >> $GITHUB_ENV
+        echo "POM_NAME=$(mvn help:evaluate -Dexpression=project.name -q -DforceStdout)" >> $GITHUB_ENV
+        echo "POM_DESCRIPTION=$(mvn help:evaluate -Dexpression=project.description -q -DforceStdout)" >> $GITHUB_ENV
 
     - name: Maven - building
       run: mvn package -Dmaven.test.skip=true
 
     - name: Maven - deploy artifacts
       run: mvn -X deploy:deploy-file
-            -DgroupId=com.eldisol
-            -DartifactId=jacoboot
-            -Dversion=0.0.1
+            -DgroupId=$POM_GROUPID
+            -DartifactId=$POM_ARTIFACTID
+            -Dversion=$POM_VERSION
             -DgeneratePom=true
             -Dpackaging=jar
-            -Dfile=./target/jacoboot-0.0.1.jar
-            -DrepositoryId=maven-releases
+            -Dfile=./target/$POM_ARTIFACTID-$POM_VERSION.jar
             -Durl=${{ secrets.NEXUS3_HOST }}/maven-releases
             -Dusername=${{ secrets.NEXUS3_USER }}
             -Dpassword=${{ secrets.NEXUS3_PASSWORD }}
+            #-DrepositoryId=maven-releases
+
 
     #- name: Nexus Repo Publish
     #  if: ${{ needs.qa_and_vs_check.result == 'success' }}
