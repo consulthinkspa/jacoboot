@@ -101,10 +101,10 @@ jobs:
     - name: Maven - building
       run: mvn package
             -Dmaven.test.skip=true
-            -Dproject.version=${POM_VERSION}-SNAPSHOT
 
       # To Do: setup snapshot repo
     - name: Maven - deploy artifacts
+      if: ${{ needs.qa_and_vs_check.result == 'success' }}
       run: mvn deploy:deploy-file
             -DgroupId=$POM_GROUPID
             -DartifactId=$POM_ARTIFACTID
@@ -112,7 +112,7 @@ jobs:
             -DgeneratePom=true
             -Dpackaging=jar
             -Durl=${{ secrets.NEXUS3_HOST }}/repository/maven-snapshots
-            -Dfile=./target/$POM_NAME-${POM_VERSION}-SNAPSHOT.jar
+            -Dfile=./target/$POM_NAME-$POM_VERSION.jar
             -Dusername=${{ secrets.NEXUS3_USER }}
             -Dpassword=${{ secrets.NEXUS3_PASSWORD }}
 
