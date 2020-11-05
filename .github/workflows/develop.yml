@@ -69,7 +69,7 @@ jobs:
             #-Dsonar.sourceEncoding=UTF-8
             #-Dsonar.dependencyCheck.securityHotspot=true
 
-    # To Do: mostrare url sonarqube in caso di fallimento
+      # To Do: mostrare url sonarqube in caso di fallimento
     - name: Sonarqube Quality Gate
       shell: bash
       run: ./.github/scripts/sonar_quality_gate.sh
@@ -103,7 +103,7 @@ jobs:
 
       # To Do: setup snapshot repo
     - name: Maven - deploy artifacts
-      run: mvn mvn deploy:deploy-file
+      run: mvn deploy:deploy-file
             -DgroupId=$POM_GROUPID
             -DartifactId=$POM_ARTIFACTID
             -Dversion=$POM_VERSION
